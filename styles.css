@@ -378,6 +378,13 @@ html {
     border: 1px solid var(--border-color);
 }
 
+.soundcloud-player {
+    width: 100%;
+    height: 166px;
+    border: 0;
+    display: block;
+}
+
 /* Waveform container - WaveSurfer.js will render here */
 .waveform {
     margin-bottom: var(--spacing-md);

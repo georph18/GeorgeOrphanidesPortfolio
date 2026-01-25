@@ -52,7 +52,7 @@ const audioProjects = {
         title: 'Corporate 6 - Library Music'
     },
     3: {
-        file: 'music/audio/Silent Waters - Mix.mp3',
+        file: 'https://github.com/georph18/GeorgeOrphanidesPortfolio/releases/download/v1.3/Silent.Waters.mp3',
         title: 'Rock Band - Silent Waters'
     },
     6: {

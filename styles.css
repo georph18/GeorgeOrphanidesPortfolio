@@ -761,6 +761,11 @@ html {
   padding: 0.65rem 0.5rem;
 }
 
+.contact-break{
+  flex-basis: 100%;
+  height: 0;
+}
+
 .contact-email .email-link{
   display: inline-flex;
   align-items: center;

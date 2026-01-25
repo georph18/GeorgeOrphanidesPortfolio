@@ -185,10 +185,76 @@ html {
     animation: pulse 2s ease-in-out infinite;
 }
 
+.filter-tabs {
+    margin: 0 auto var(--spacing-xl);
+    display: inline-flex;
+    gap: 0.75rem;
+    padding: 0.4rem;
+    border-radius: 999px;
+    background: rgba(15, 22, 36, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter-tab {
+    border: 0;
+    background: transparent;
+    color: var(--text-light);
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: background 200ms ease, color 200ms ease, transform 200ms ease;
+}
+
+.filter-tab:hover {
+    color: var(--text-color);
+    transform: translateY(-1px);
+}
+
+.filter-tab.is-active {
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.9), rgba(183, 148, 244, 0.9));
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(102, 126, 234, 0.35);
+}
+
+@media (min-width: 769px) {
+    .cta-button {
+        position: absolute;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        z-index: 1;
+    }
+
+    .bio-container {
+        padding: calc(var(--spacing-xxl) - 2.25rem);
+        margin-bottom: calc(var(--spacing-xl) + 2.75rem);
+        gap: calc(var(--spacing-xl) - 0.5rem);
+    }
+
+    .bio-image {
+        width: 170px;
+        height: 170px;
+    }
+
+    .filter-tabs {
+        position: static;
+        transform: none;
+    }
+}
+
 .cta-button:hover {
     background: var(--accent-hover);
     transform: translateY(-2px);
     box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+}
+
+@media (min-width: 769px) {
+    .cta-button:hover {
+        transform: translateX(-50%) translateY(-2px);
+    }
 }
 
 .cta-button .arrow {
@@ -197,7 +263,7 @@ html {
 }
 
 .cta-button:hover .arrow {
-    transform: translateX(5px);
+    transform: none;
 }
 
 /* Pulse animation for CTA button */
@@ -759,6 +825,11 @@ html {
 .contact-email{
   gap: 0;
   padding: 0.65rem 0.5rem;
+}
+
+.contact-break{
+  flex-basis: 100%;
+  height: 0;
 }
 
 .contact-email .email-link{

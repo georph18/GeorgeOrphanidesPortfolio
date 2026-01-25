@@ -21,7 +21,9 @@
  */
 function scrollToPortfolio() {
     const portfolioSection = document.getElementById('portfolio');
-    portfolioSection.scrollIntoView({ behavior: 'smooth' });
+    if (portfolioSection) {
+        portfolioSection.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 /**
@@ -31,6 +33,48 @@ function scrollToPortfolio() {
 function scrollToLanding() {
     const landingSection = document.getElementById('landing');
     landingSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ==========================================================================
+// PORTFOLIO FILTER TABS
+// ==========================================================================
+
+function setupPortfolioFilters() {
+    const tabs = document.querySelectorAll('.filter-tab[data-filter]');
+    const cards = document.querySelectorAll('.project-card[data-type]');
+    const portfolioSection = document.getElementById('portfolio');
+
+    if (!tabs.length || !cards.length) {
+        return;
+    }
+
+    const setActive = (selected) => {
+        tabs.forEach((tab) => {
+            tab.classList.toggle('is-active', tab === selected);
+        });
+    };
+
+    const applyFilter = (filter) => {
+        cards.forEach((card) => {
+            const type = card.getAttribute('data-type');
+            card.style.display = type === filter ? '' : 'none';
+        });
+    };
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+            const filter = tab.getAttribute('data-filter');
+            setActive(tab);
+            applyFilter(filter);
+            if (portfolioSection) {
+                portfolioSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    });
+
+    const initial = document.querySelector('.filter-tab.is-active') || tabs[0];
+    setActive(initial);
+    applyFilter(initial.getAttribute('data-filter'));
 }
 
 // ==========================================================================
@@ -58,6 +102,10 @@ const audioProjects = {
     6: {
         file: 'https://github.com/georph18/GeorgeOrphanidesPortfolio/releases/download/v1.2/No.More.Excuses.-.MIX.wav',
         title: 'Rock Band - No More Excuses'
+    },
+    7: {
+        file: 'https://github.com/georph18/GeorgeOrphanidesPortfolio/releases/download/V1.4/RAFAEL.-.CREEP.Piano.Version.wav',
+        title: 'Rafael - Creep (Cover)'
     }
 };
 
@@ -171,9 +219,15 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
     }
 
     if (playButton) {
-        playButton.addEventListener('click', () => {
+        playButton.addEventListener('click', async () => {
             if (audioElement.paused) {
-                audioElement.play();
+                pauseOtherPlayers(projectId);
+                pauseOtherHtmlAudio(projectId);
+                try {
+                    await audioElement.play();
+                } catch (error) {
+                    console.warn('Audio play failed:', error);
+                }
             } else {
                 audioElement.pause();
             }
@@ -181,6 +235,8 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
     }
 
     audioElement.addEventListener('play', () => {
+        pauseOtherPlayers(projectId);
+        pauseOtherHtmlAudio(projectId);
         if (playIcon) {
             playIcon.textContent = '⏸';
         }
@@ -301,68 +357,17 @@ function setupPlayerEvents(projectId, wavesurfer) {
     });
 
     // Play/Pause button click handler
-    playButton.addEventListener('click', () => {
-        wavesurfer.playPause();
-    });
-
-    // Update play/pause icon when playback state changes
-    wavesurfer.on('play', () => {
-        playIcon.textContent = '⏸'; // Pause icon
-        playButton.setAttribute('aria-label', 'Pause');
-    });
-
-    wavesurfer.on('pause', () => {
-        playIcon.textContent = '▶'; // Play icon
-        playButton.setAttribute('aria-label', 'Play');
-    });
-
-    // Update time display during playback
-    wavesurfer.on('audioprocess', () => {
-        const currentTime = wavesurfer.getCurrentTime();
-        currentTimeElement.textContent = formatTime(currentTime);
-    });
-
-    // Update duration when audio is ready
-    wavesurfer.on('ready', () => {
-        const duration = wavesurfer.getDuration();
-        durationElement.textContent = formatTime(duration);
-        currentTimeElement.textContent = formatTime(0);
-        console.log(`Player ${projectId} ready. Duration: ${duration}s`);
-    });
-
-    // Update time display when seeking
-    wavesurfer.on('seek', () => {
-        const currentTime = wavesurfer.getCurrentTime();
-        currentTimeElement.textContent = formatTime(currentTime);
-    });
-
-    // Reset icon when audio finishes playing
-    wavesurfer.on('finish', () => {
-        playIcon.textContent = '▶';
-        playButton.setAttribute('aria-label', 'Play');
-    });
-
-    // Handle loading errors
-    wavesurfer.on('error', (error) => {
-        console.error(`Player ${projectId} error:`, error);
-        playButton.disabled = true;
-        playButton.style.opacity = '0.5';
-        playButton.style.cursor = 'not-allowed';
-
-        // Show error in the waveform container
-        const waveformContainer = document.getElementById(`waveform-${projectId}`);
-        waveformContainer.innerHTML = `
-            <div style="padding: 1rem; color: #fc8181; background: #742a2a; border-radius: 5px;">
-                <strong>⚠ Error loading audio</strong><br>
-                <small>Make sure to run from a local server (not file://)</small>
-            </div>
-        `;
-    });
-
-    // Show loading state
-    wavesurfer.on('loading', (percent) => {
-        if (percent < 100) {
-            currentTimeElement.textContent = `${Math.round(percent)}%`;
+    playButton.addEventListener('click', async () => {
+        if (wavesurfer.isPlaying()) {
+            wavesurfer.pause();
+            return;
+        }
+        pauseOtherPlayers(projectId);
+        pauseOtherHtmlAudio(projectId);
+        try {
+            await wavesurfer.play();
+        } catch (error) {
+            console.warn('WaveSurfer play failed:', error);
         }
     });
 }
@@ -395,6 +400,16 @@ function pauseOtherPlayers(currentPlayerId) {
     Object.keys(waveSurfers).forEach(playerId => {
         if (playerId !== currentPlayerId && waveSurfers[playerId].isPlaying()) {
             waveSurfers[playerId].pause();
+        }
+    });
+}
+
+function pauseOtherHtmlAudio(currentPlayerId) {
+    const htmlAudios = document.querySelectorAll('audio.hidden-audio[data-player]');
+    htmlAudios.forEach((audio) => {
+        const playerId = audio.getAttribute('data-player');
+        if (playerId !== String(currentPlayerId) && !audio.paused) {
+            audio.pause();
         }
     });
 }
@@ -541,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize audio players
     initializeAudioPlayers();
+    setupPortfolioFilters();
 
     // Enable optional features (uncomment to activate)
     // enableKeyboardShortcuts();

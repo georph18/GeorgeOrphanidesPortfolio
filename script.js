@@ -201,6 +201,7 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
     const seekSlider = document.querySelector(`.seek-slider[data-player="${projectId}"]`);
     const volumeSlider = document.querySelector(`.volume-slider[data-player="${projectId}"]`);
     const volumeValue = volumeSlider ? volumeSlider.nextElementSibling : null;
+    const volumeIcon = volumeSlider ? volumeSlider.previousElementSibling : null;
     let isSeeking = false;
 
     audioElement.volume = 0.7;
@@ -214,6 +215,20 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
             audioElement.volume = Math.min(Math.max(volume, 0), 1);
             if (volumeValue) {
                 volumeValue.textContent = `${e.target.value}%`;
+            }
+
+            // Update volume icon based on level using Font Awesome classes
+            if (volumeIcon) {
+                volumeIcon.className = 'volume-icon'; // Reset classes
+                if (e.target.value == 0) {
+                    volumeIcon.classList.add('fa-solid', 'fa-volume-xmark'); // Muted
+                } else if (e.target.value < 33) {
+                    volumeIcon.classList.add('fa-solid', 'fa-volume-low'); // Low volume
+                } else if (e.target.value < 66) {
+                    volumeIcon.classList.add('fa-solid', 'fa-volume-low'); // Medium volume
+                } else {
+                    volumeIcon.classList.add('fa-solid', 'fa-volume-high'); // High volume
+                }
             }
         });
     }
@@ -344,15 +359,16 @@ function setupPlayerEvents(projectId, wavesurfer) {
         wavesurfer.setVolume(volume);
         volumeValue.textContent = `${e.target.value}%`;
 
-        // Update volume icon based on level
+        // Update volume icon based on level using Font Awesome classes
+        volumeIcon.className = 'volume-icon'; // Reset classes
         if (e.target.value == 0) {
-            volumeIcon.textContent = '🔇'; // Muted
+            volumeIcon.classList.add('fa-solid', 'fa-volume-xmark'); // Muted
         } else if (e.target.value < 33) {
-            volumeIcon.textContent = '🔈'; // Low volume
+            volumeIcon.classList.add('fa-solid', 'fa-volume-low'); // Low volume
         } else if (e.target.value < 66) {
-            volumeIcon.textContent = '🔉'; // Medium volume
+            volumeIcon.classList.add('fa-solid', 'fa-volume-low'); // Medium volume
         } else {
-            volumeIcon.textContent = '🔊'; // High volume
+            volumeIcon.classList.add('fa-solid', 'fa-volume-high'); // High volume
         }
     });
 

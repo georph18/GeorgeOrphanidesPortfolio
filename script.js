@@ -237,6 +237,7 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
         // Volume slider event handlers (both 'input' for desktop and 'change' for mobile)
         volumeSlider.addEventListener('input', updateVolume);
         volumeSlider.addEventListener('change', updateVolume);
+        volumeSlider.addEventListener('touchmove', updateVolume);
     }
 
     if (playButton) {
@@ -381,6 +382,7 @@ function setupPlayerEvents(projectId, wavesurfer) {
     // Volume slider event handlers (both 'input' for desktop and 'change' for mobile)
     volumeSlider.addEventListener('input', updateVolume);
     volumeSlider.addEventListener('change', updateVolume);
+    volumeSlider.addEventListener('touchmove', updateVolume);
 
     // Play/Pause button click handler
     playButton.addEventListener('click', async () => {

@@ -491,6 +491,13 @@ html {
 .play-icon {
     color: white;
     font-size: var(--font-size-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-icon i {
+    font-size: 1.1rem;
 }
 
 /* Time display */
@@ -525,6 +532,7 @@ html {
     outline: none;
     cursor: pointer;
     transition: all 0.2s ease;
+    touch-action: none;
 }
 
 .seek-slider {

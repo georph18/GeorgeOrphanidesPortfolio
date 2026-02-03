@@ -210,7 +210,9 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
         if (volumeValue) {
             volumeValue.textContent = '70%';
         }
-        volumeSlider.addEventListener('input', (e) => {
+
+        // Volume update handler (works for both desktop and mobile)
+        const updateVolume = (e) => {
             const volume = Number(e.target.value) / 100;
             audioElement.volume = Math.min(Math.max(volume, 0), 1);
             if (volumeValue) {
@@ -230,7 +232,11 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
                     volumeIcon.classList.add('fa-solid', 'fa-volume-high'); // High volume
                 }
             }
-        });
+        };
+
+        // Volume slider event handlers (both 'input' for desktop and 'change' for mobile)
+        volumeSlider.addEventListener('input', updateVolume);
+        volumeSlider.addEventListener('change', updateVolume);
     }
 
     if (playButton) {
@@ -253,7 +259,7 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
         pauseOtherPlayers(projectId);
         pauseOtherHtmlAudio(projectId);
         if (playIcon) {
-            playIcon.textContent = '⏸';
+            playIcon.innerHTML = '<i class="fa-solid fa-pause"></i>';
         }
         if (playButton) {
             playButton.setAttribute('aria-label', 'Pause');
@@ -262,7 +268,7 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
 
     audioElement.addEventListener('pause', () => {
         if (playIcon) {
-            playIcon.textContent = '▶';
+            playIcon.innerHTML = '<i class="fa-solid fa-play"></i>';
         }
         if (playButton) {
             playButton.setAttribute('aria-label', 'Play');
@@ -292,7 +298,7 @@ function setupHtmlAudioPlayer(projectId, audioElement) {
 
     audioElement.addEventListener('ended', () => {
         if (playIcon) {
-            playIcon.textContent = '▶';
+            playIcon.innerHTML = '<i class="fa-solid fa-play"></i>';
         }
         if (playButton) {
             playButton.setAttribute('aria-label', 'Play');
@@ -353,8 +359,8 @@ function setupPlayerEvents(projectId, wavesurfer) {
     // Set initial volume to 70%
     wavesurfer.setVolume(0.7);
 
-    // Volume slider change handler
-    volumeSlider.addEventListener('input', (e) => {
+    // Volume update handler (works for both desktop and mobile)
+    const updateVolume = (e) => {
         const volume = e.target.value / 100; // Convert 0-100 to 0-1
         wavesurfer.setVolume(volume);
         volumeValue.textContent = `${e.target.value}%`;
@@ -370,7 +376,11 @@ function setupPlayerEvents(projectId, wavesurfer) {
         } else {
             volumeIcon.classList.add('fa-solid', 'fa-volume-high'); // High volume
         }
-    });
+    };
+
+    // Volume slider event handlers (both 'input' for desktop and 'change' for mobile)
+    volumeSlider.addEventListener('input', updateVolume);
+    volumeSlider.addEventListener('change', updateVolume);
 
     // Play/Pause button click handler
     playButton.addEventListener('click', async () => {
@@ -384,6 +394,40 @@ function setupPlayerEvents(projectId, wavesurfer) {
             await wavesurfer.play();
         } catch (error) {
             console.warn('WaveSurfer play failed:', error);
+        }
+    });
+
+    // WaveSurfer event listeners to update UI
+    wavesurfer.on('ready', () => {
+        // Set duration when audio is ready
+        if (durationElement) {
+            durationElement.textContent = formatTime(wavesurfer.getDuration());
+        }
+        if (currentTimeElement) {
+            currentTimeElement.textContent = formatTime(0);
+        }
+        // Ensure play icon is showing
+        playIcon.innerHTML = '<i class="fa-solid fa-play"></i>';
+    });
+
+    wavesurfer.on('play', () => {
+        playIcon.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        playButton.setAttribute('aria-label', 'Pause');
+    });
+
+    wavesurfer.on('pause', () => {
+        playIcon.innerHTML = '<i class="fa-solid fa-play"></i>';
+        playButton.setAttribute('aria-label', 'Play');
+    });
+
+    wavesurfer.on('finish', () => {
+        playIcon.innerHTML = '<i class="fa-solid fa-play"></i>';
+        playButton.setAttribute('aria-label', 'Play');
+    });
+
+    wavesurfer.on('timeupdate', (currentTime) => {
+        if (currentTimeElement) {
+            currentTimeElement.textContent = formatTime(currentTime);
         }
     });
 }
